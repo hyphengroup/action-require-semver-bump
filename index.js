@@ -50,6 +50,7 @@ async function run() {
       startLine: head_version.lineNumber,
       startColumn: head_version.column
     })
+    core.setFailed(`The head version (${head_version}) is not greater than the base version (${base_version})`)
     return
   }
   core.debug(`Success, the head version (${head_version.value}) has been validated to be higher than the base version (${base_version.value}).`)

@@ -31,14 +31,16 @@ async function run() {
       repo: repo,
       name: "semver-bump",
       head_sha: push_commmit_sha,
-      conclustion: "skipped",
+      conclusion: "skipped",
       output: {
         title: "Check for semver version bump",
         summary: `Pull request not found`,
         annotations: [{
           annotation_level: "notice",
           message: `Ensure version is bumped`,
-          file: file_path
+          path: file_path,
+          start_line: 0,
+          end_line: 0
         }]
       }
     })
@@ -62,16 +64,17 @@ async function run() {
       repo: repo,
       name: "semver-bump",
       head_sha: push_commmit_sha,
-      conclustion: "failure",
+      conclusion: "failure",
       output: {
         title: "Check for semver version bump",
         summary: `Version not bumped in ${file_path}`,
         annotations: [{
           annotation_level: "failure",
           message: `The head version (${head_version.value}) is not greater than the base version (${base_version.value})`,
-          file: file_path,
-          startLine: head_version.lineNumber,
-          startColumn: head_version.column
+          path: file_path,
+          start_line: head_version.lineNumber,
+          end_line: head_version.lineNumber,
+          start_column: head_version.column
         }]
       }
     })
@@ -83,16 +86,17 @@ async function run() {
       name: "semver-bump",
       head_sha: push_commmit_sha,
       status: "completed",
-      conclustion: "success",
+      conclusion: "success",
       output: {
         title: "Check for semver version bump",
         summary: `Version bumped in ${file_path}`,
         annotations: [{
           annotation_level: "notice",
           message: `Success, the head version (${head_version.value}) has been validated to be higher than the base version (${base_version.value}).`,
-          file: file_path,
-          startLine: head_version.lineNumber,
-          startColumn: head_version.column
+          path: file_path,
+          start_line: head_version.lineNumber,
+          end_line: head_version.lineNumber,
+          start_column: head_version.column
         }]
       }
     })

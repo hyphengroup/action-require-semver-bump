@@ -8,57 +8,36 @@ const file_path = core.getInput('version-file-path') || 'version.py';
 const octokit = github.getOctokit(token)
 
 async function run() {
-  // Type: https://developer.github.com/v3/activity/events/types/#pushevent
   const event = github.context.payload
 
   const repo = event.repository.name
   const owner = event.repository.owner.login
-  const push_commmit_sha = event.after
-
-  core.debug(`owner/repo: ${owner}/${repo}`)
-  const { data: pulls } = await octokit.rest.pulls.list({ owner, repo })
-
-  const pull = pulls.find(p => p.head.sha == push_commmit_sha)
-
-  if (!pull) {
-    // There will obviously be many pushes that are not to branches with
-    // active PRs. So, this could mean nothing. It could however mean that
-    // something is wrong because there really is a PR for this push but
-    // we couldn't find it.
-    core.warning('Could not find pull request for this push...')
-    octokit.rest.checks.create({
-      owner: owner,
-      repo: repo,
-      name: "semver-bump",
-      head_sha: push_commmit_sha,
-      conclusion: "skipped",
-      output: {
-        title: "Check for semver version bump",
-        summary: `Pull request not found`,
-        annotations: [{
-          annotation_level: "notice",
-          message: `Ensure version is bumped`,
-          path: file_path,
-          start_line: 1,
-          end_line: 1,
-          start_column: 1,
-          end_column: 1
-        }]
-      }
-    })
+  let pull_request
+  if (github.context.eventName === "push"){
+    // get pr if exists
+    let { data: pulls } = await octokit.rest.pulls.list({ owner, repo })
+    pull_request = pulls.find(p => p.head.sha == event.after)
+  } else if (github.context.eventName === "pull_request"){
+    // Type: https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
+    pull_request = event.pull_request
+  } else {
+    core.warning(`Unsupported event: ${github.context.eventName}`)
     return
   }
 
-  const base_commit_sha = pull.base.sha
+  if(!pull_request){
+    core.warning('Could not find pull request for this push...')
+    return
+  }
 
   // parallel fetch both version lookups
   let [head_version, base_version] = await Promise.all([
-    get_version_at_commit(owner, repo, push_commmit_sha),
-    get_version_at_commit(owner, repo, base_commit_sha)
+    get_version_at_commit(owner, repo, pull_request.head.sha),
+    get_version_at_commit(owner, repo, pull_request.base.sha)
   ])
 
-  core.debug(`Head Version: ${head_version}`)
-  core.debug(`Base Version: ${base_version}`)
+  core.debug(`Head Version: ${head_version.value}`)
+  core.debug(`Base Version: ${base_version.value}`)
 
   if (!semver.gt(head_version.value, base_version.value)) {
     octokit.rest.checks.create({
@@ -81,7 +60,6 @@ async function run() {
         }]
       }
     })
-    // core.setFailed(`The head version (${head_version.value}) is not greater than the base version (${base_version.value})`)
   } else {
     octokit.rest.checks.create({
       owner: owner,

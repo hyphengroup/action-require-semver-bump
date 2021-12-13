@@ -44,7 +44,7 @@ async function run() {
       owner: owner,
       repo: repo,
       name: "semver-bump",
-      head_sha: push_commmit_sha,
+      head_sha: pull_request.head.sha,
       conclusion: "failure",
       output: {
         title: "Check for semver version bump",
@@ -65,7 +65,7 @@ async function run() {
       owner: owner,
       repo: repo,
       name: "semver-bump",
-      head_sha: push_commmit_sha,
+      head_sha: pull_request.head.sha,
       status: "completed",
       conclusion: "success",
       output: {

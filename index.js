@@ -65,7 +65,7 @@ async function get_version_at_commit(owner, repo, hash) {
       owner: owner,
       repo: repo,
       path: file_path,
-      ref: push_commmit_sha
+      ref: hash
     });
     return parse_version(raw_file)
   } catch(err) {

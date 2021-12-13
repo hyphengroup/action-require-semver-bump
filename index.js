@@ -57,8 +57,8 @@ async function run() {
     get_version_at_commit(owner, repo, base_commit_sha)
   ])
 
-  core.debug(`Head Version: ${head_version.value}`)
-  core.debug(`Base Version: ${base_version.value}`)
+  core.debug(`Head Version: ${head_version}`)
+  core.debug(`Base Version: ${base_version}`)
 
   if (!semver.gt(head_version.value, base_version.value)) {
     octokit.rest.checks.create({
@@ -124,7 +124,6 @@ async function get_version_at_commit(owner, repo, hash) {
     core.setFailed(err.toString())
     throw `Failed to get and parse version from ${owner}/${repo}/${hash}/${file_path}`
   })
-  core.debug(version)
   return version
 }
 
@@ -151,14 +150,14 @@ function parse_version(str) {
 
 function lineNumberByIndex(index, string) {
   const re = /^[\S\s]/gm
-  let line = 0, match
+  let line = 1, match
   let lastRowIndex = 0
   while ((match = re.exec(string))) {
     if (match.index > index) break
     lastRowIndex = match.index
     line++;
   }
-  return [Math.max(line - 1, 0), lastRowIndex]
+  return [Math.max(line - 1, 1), lastRowIndex]
 }
 
 run().catch(err => {

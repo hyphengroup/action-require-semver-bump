@@ -39,8 +39,8 @@ async function run() {
           annotation_level: "notice",
           message: `Ensure version is bumped`,
           path: file_path,
-          start_line: 0,
-          end_line: 0
+          start_line: 1,
+          end_line: 1
         }]
       }
     })
@@ -120,6 +120,7 @@ async function get_version_at_commit(owner, repo, hash) {
     core.setFailed(err.toString())
     throw `Failed to get and parse version from ${owner}/${repo}/${hash}/${file_path}`
   })
+  core.debug(version)
   return version
 }
 

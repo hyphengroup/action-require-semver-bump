@@ -67,7 +67,7 @@ async function get_version_at_commit(owner, repo, hash) {
       path: file_path,
       ref: hash
     });
-    core.debug(raw_file.toString())
+    core.debug(raw_file)
     return parse_version(raw_file)
   } catch(err) {
     core.error(err.toString())

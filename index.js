@@ -15,7 +15,8 @@ async function run() {
   const owner = event.repository.owner.login
   const push_commmit_sha = event.after
 
-  const { data: pulls } = await octokit.pulls.list({ owner, repo })
+  core.debug(`owner/repo: ${owner}/${repo}`)
+  const { data: pulls } = await octokit.rest.pulls.list({ owner, repo })
 
   const pull = pulls.find(p => p.head.sha == push_commmit_sha)
 

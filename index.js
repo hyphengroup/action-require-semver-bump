@@ -66,7 +66,7 @@ async function get_version_at_commit(owner, repo, hash) {
     path: file_path,
     ref: hash
   })
-  .then(data => parse_version(data))
+  .then(({data}) => parse_version(data))
   .catch(err => {
     core.error(err.toString())
     core.setFailed(err.toString())

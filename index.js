@@ -40,7 +40,9 @@ async function run() {
           message: `Ensure version is bumped`,
           path: file_path,
           start_line: 1,
-          end_line: 1
+          end_line: 1,
+          start_column: 1,
+          end_column: 1
         }]
       }
     })
@@ -74,7 +76,8 @@ async function run() {
           path: file_path,
           start_line: head_version.lineNumber,
           end_line: head_version.lineNumber,
-          start_column: head_version.column
+          start_column: head_version.column,
+          end_column: head_version.column
         }]
       }
     })
@@ -96,7 +99,8 @@ async function run() {
           path: file_path,
           start_line: head_version.lineNumber,
           end_line: head_version.lineNumber,
-          start_column: head_version.column
+          start_column: head_version.column,
+          end_column: head_version.column
         }]
       }
     })

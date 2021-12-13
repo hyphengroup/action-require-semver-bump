@@ -58,7 +58,7 @@ function parse_version(str) {
 async function get_version_at_commit(owner, repo, hash) {
   core.debug(`Pulling version from ${owner}/${repo}/${hash}/${file_path}`)
   try {
-    const { raw_file } = octokit.rest.repos.getContent({
+    const { data } = octokit.rest.repos.getContent({
       mediaType: {
         format: "raw",
       },
@@ -67,8 +67,8 @@ async function get_version_at_commit(owner, repo, hash) {
       path: file_path,
       ref: hash
     });
-    core.debug(raw_file)
-    return parse_version(raw_file)
+    core.debug(data)
+    return parse_version(data)
   } catch(err) {
     core.error(err.toString())
     core.setFailed(err.toString())

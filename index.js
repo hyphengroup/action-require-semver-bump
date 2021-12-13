@@ -25,9 +25,22 @@ async function run() {
     // active PRs. So, this could mean nothing. It could however mean that
     // something is wrong because there really is a PR for this push but
     // we couldn't find it.
-    core.warning('Could not find pull request for this push...', {
-      title: "Bump semver version",
-      file: file_path
+    core.warning('Could not find pull request for this push...')
+    octokit.rest.checks.create({
+      owner: owner,
+      repo: repo,
+      name: "semver-bump",
+      head_sha: push_commmit_sha,
+      conclustion: "skipped",
+      output: {
+        title: "Check for semver version bump",
+        summary: `Pull request not found`,
+        annotations: [{
+          annotation_level: "notice",
+          message: `Ensure version is bumped`,
+          file: file_path
+        }]
+      }
     })
     return
   }
@@ -44,16 +57,46 @@ async function run() {
   core.debug(`Base Version: ${base_version.value}`)
 
   if (!semver.gt(head_version.value, base_version.value)) {
-    core.error(`The head version (${head_version.value}) is not greater than the base version (${base_version.value})`,{
-      title: "Bump semver version",
-      file: file_path,
-      startLine: head_version.lineNumber,
-      startColumn: head_version.column
+    octokit.rest.checks.create({
+      owner: owner,
+      repo: repo,
+      name: "semver-bump",
+      head_sha: push_commmit_sha,
+      conclustion: "failure",
+      output: {
+        title: "Check for semver version bump",
+        summary: `Version not bumped in ${file_path}`,
+        annotations: [{
+          annotation_level: "failure",
+          message: `The head version (${head_version.value}) is not greater than the base version (${base_version.value})`,
+          file: file_path,
+          startLine: head_version.lineNumber,
+          startColumn: head_version.column
+        }]
+      }
     })
-    core.setFailed()
-    return
+    // core.setFailed(`The head version (${head_version.value}) is not greater than the base version (${base_version.value})`)
+  } else {
+    octokit.rest.checks.create({
+      owner: owner,
+      repo: repo,
+      name: "semver-bump",
+      head_sha: push_commmit_sha,
+      status: "completed",
+      conclustion: "success",
+      output: {
+        title: "Check for semver version bump",
+        summary: `Version bumped in ${file_path}`,
+        annotations: [{
+          annotation_level: "notice",
+          message: `Success, the head version (${head_version.value}) has been validated to be higher than the base version (${base_version.value}).`,
+          file: file_path,
+          startLine: head_version.lineNumber,
+          startColumn: head_version.column
+        }]
+      }
+    })
   }
-  core.debug(`Success, the head version (${head_version.value}) has been validated to be higher than the base version (${base_version.value}).`)
 }
 
 async function get_version_at_commit(owner, repo, hash) {

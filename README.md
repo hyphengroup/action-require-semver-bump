@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: hyphengroup/action-require-semver-bump@v3
         with:
-          version-regex-pattern: >
-            version: (.+)
+          # must include capture group vor actual version value
+          version-regex-pattern: version: (.+)
           version-file-path: 'hyphen-service/Chart.yaml'
 ```

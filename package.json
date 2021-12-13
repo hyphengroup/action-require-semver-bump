@@ -1,27 +1,29 @@
 {
   "name": "require-semvar-bump",
-  "version": "1.0.0",
-  "description": "",
+  "version": "3.0.0",
+  "description": "Javascript action to require version bump",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rayepps/require-semvar-bump.git"
+    "url": "git+https://github.com/hyphengroup/action-require-semvar-bump.git"
   },
-  "keywords": [],
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "JavaScript"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rayepps/require-semvar-bump/issues"
+    "url": "https://github.com/hyphengroup/action-require-semvar-bump/issues"
   },
-  "homepage": "https://github.com/rayepps/require-semvar-bump#readme",
+  "homepage": "https://github.com/hyphengroup/action-require-semvar-bump#readme",
   "dependencies": {
-    "@actions/core": "^1.2.2",
-    "@actions/github": "^2.1.0",
-    "@octokit/rest": "^16.43.1",
-    "request": "^2.88.0",
-    "semver": "^7.1.2"
+    "@actions/core": "^1.6.0",
+    "@octokit/core": "^3.5.1",
+    "semver": "^7.3.5"
   }
 }

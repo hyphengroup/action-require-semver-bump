@@ -1,27 +1,19 @@
-const { Octokit } = require("@octokit/rest")
-const github = require('@actions/github')
+const github = require('@actions/github');
 const core = require('@actions/core')
-const request = require('request')
 const semver = require('semver')
 
-// This should be a token with access to your repository scoped in as a secret.
-// The YML workflow will need to set myToken with the GitHub Secret Token
-// myToken: ${{ secrets.GITHUB_TOKEN }}
-// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
-const token = core.getInput('github-token', { required: true })
-const regex = core.getInput('version-regex-pattern') || `VERSION = [\\'\\"](.+?)[\\'\\"]`
-const file_path = core.getInput('version-file-path') || 'version.py'
+const token = core.getInput('github-token' );
+const regex = core.getInput('version-regex-pattern') || `VERSION = [\\'\\"](.+?)[\\'\\"]`;
+const file_path = core.getInput('version-file-path') || 'version.py';
+const octokit = github.getOctokit(token)
 
 async function run() {
-
   // Type: https://developer.github.com/v3/activity/events/types/#pushevent
   const event = github.context.payload
 
   const repo = event.repository.name
   const owner = event.repository.owner.login
   const push_commmit_sha = event.after
-
-  const octokit = new Octokit({ auth: token })
 
   const { data: pulls } = await octokit.pulls.list({ owner, repo })
 
@@ -38,8 +30,8 @@ async function run() {
 
   const base_commit_sha = pull.base.sha
 
-  const head_version = await get_version_at_commit(owner, repo, push_commmit_sha, token)
-  const base_version = await get_version_at_commit(owner, repo, base_commit_sha, token)
+  const head_version = await get_version_at_commit(owner, repo, push_commmit_sha)
+  const base_version = await get_version_at_commit(owner, repo, base_commit_sha)
 
   core.debug(`Head Version: ${head_version}`)
   core.debug(`Base Version: ${base_version}`)
@@ -55,22 +47,6 @@ async function run() {
 
 }
 
-function http_get(url, token) {
-  return new Promise((resolve, reject) => {
-    request({ 
-      url, 
-      headers: {
-        'Authorization': `token ${token}`
-      }
-    }, (error, response, body) => {
-      if (error) return reject(error)
-      if (!response) return reject('No response recieved')
-      if (response.statusCode > 299) return reject(`Bad response (${response.statusCode}) from ${url}`)
-      resolve({ response, body })
-    })
-  })
-}
-
 function parse_version(str) {
   core.debug(`RegExp: ${regex}`)
   core.debug(`Version Input: ${str}`)
@@ -78,18 +54,24 @@ function parse_version(str) {
   return matches && matches.length > 1 ? matches[1] : null
 }
 
-async function get_version_at_commit(owner, repo, hash, token) {
-  const version_url = `https://raw.githubusercontent.com/${owner}/${repo}/${hash}/${file_path}`
-  core.debug(`Pulling version from ${version_url}`)
+async function get_version_at_commit(owner, repo, hash) {
+  core.debug(`Pulling version from ${owner}/${repo}/${hash}/${file_path}`)
   try {
-    const { response, body } = await http_get(version_url, token)
-    return parse_version(body)
+    const { raw_file } = octokit.rest.repos.getContent({
+      mediaType: {
+        format: "raw",
+      },
+      owner: owner,
+      repo: repo,
+      path: file_path,
+      ref: push_commmit_sha
+    });
+    return parse_version(raw_file)
   } catch(err) {
     core.error(err.toString())
     core.setFailed(err.toString())
-    throw `Failed to get and parse version from ${version_url}`
+    throw `Failed to get and parse version from ${owner}/${repo}/${hash}/${file_path}`
   }
-
 }
 
 run().catch(err => {
